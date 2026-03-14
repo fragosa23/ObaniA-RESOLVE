@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMM AI RADAR PRO</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #030303;
+            --card: #0d1117;
+            --accent: #00ff88;
+            --blue: #00d2ff;
+            --purple: #bc13fe;
+            --text: #ffffff;
+            --subtext: #8b949e;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
+
+        /* BANNER COM VÍDEO DO ENGENHEIRO */
+        .banner-container {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .banner-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.7) contrast(1.1);
+        }
+
+        .banner-overlay {
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        .banner-text {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,1);
+            margin: 0;
+        }
+
+        /* BOTÃO RUN CENTRAL */
+        #hero { height: 40vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .btn-run { 
+            width: 140px; height: 140px; border-radius: 50%; border: none; background: var(--accent);
+            color: #000; font-size: 22px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4); transition: 0.3s;
+        }
+        .btn-run:hover { transform: scale(1.1); filter: brightness(1.2); }
+
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; display: none; }
+
+        /* ESTILO DOS CARTÕES */
+        .card { background: var(--card); border-radius: 18px; margin-bottom: 25px; border: 1px solid #30363d; overflow: hidden; animation: slideUp 0.6s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card-header { padding: 12px 20px; background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        .source-box { display: flex; align-items: center; gap: 8px; }
+        .source-logo { width: 16px; height: 16px; border-radius: 3px; }
+        
+        .tag { padding: 3px 12px; border-radius: 4px; font-size: 9px; font-weight: 900; color: #000; text-transform: uppercase; }
+        .tag-noticia { background: var(--blue); }
+        .tag-podcast { background: var(--purple); }
+        .tag-video { background: var(--accent); }
+
+        .card-body { padding: 20px; }
+        .headline { font-size: 19px; font-weight: 800; color: #fff; text-decoration: none; display: block; margin-bottom: 12px; line-height: 1.3; }
+        .summary { font-size: 14px; color: var(--subtext); line-height: 1.6; margin: 0; }
+
+        .card-footer { display: flex; justify-content: space-between; padding: 15px 20px; border-top: 1px solid #222; background: rgba(0,0,0,0.2); }
+        .btn-tool { background: none; border: none; color: #555; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: bold; }
+        .btn-tool:hover { color: #fff; }
+
+        /* GRÁFICO SOCIAL */
+        .trends-panel { background: #000; border: 1px dashed var(--accent); border-radius: 20px; padding: 25px; margin: 40px 0; }
+        .trend-title { font-size: 10px; color: var(--accent); font-weight: 900; letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; }
+        .bar-container { margin-bottom: 18px; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 8px; color: #fff; }
+        .bar-bg { background: #161b22; height: 10px; border-radius: 5px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 2s ease; box-shadow: 0 0 15px var(--accent); }
+
+        /* RESUMIDAMENTE */
+        .briefing-box { background: #0d1117; border: 1px solid #333; padding: 25px; border-radius: 20px; position: relative; margin-top: 20px;}
+        .briefing-box::before { content: "RESUMIDAMENTE:"; position: absolute; top: -10px; left: 20px; background: var(--accent); color: #000; font-size: 10px; font-weight: 900; padding: 2px 10px; border-radius: 4px; }
+        .briefing-list { list-style: none; padding: 0; margin-top: 10px; }
+        .briefing-list li { margin-bottom: 12px; padding-left: 25px; position: relative; color: #eee; font-size: 14px; line-height: 1.5; }
+        .briefing-list li::before { content: "→"; position: absolute; left: 0; color: var(--accent); font-weight: bold; }
+
+        #loader { display: none; text-align: center; color: var(--accent); padding: 80px; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="banner-container">
+    <video class="banner-video" autoplay muted loop playsinline>
+        <source src="gemini_generated_video_134FB941_1773521655742.mp4" type="video/mp4">
+    </video>
+    <div class="banner-overlay">
+        <p class="banner-text">Eng. LMM recomenda:</p>
+    </div>
+</div>
+
+<div id="hero">
+    <button class="btn-run" onclick="launchRadar()">RUN...</button>
+    <p style="color:#333; font-size:9px; letter-spacing:4px; margin-top:20px">ENGENHARIA_DE_DADOS_ATIVA</p>
+</div>
+
+<div id="loader">_A INTERCEPTAR SINAIS...</div>
+
+<div id="main-content" class="container">
+    <div id="news-feed"></div>
+
+    <div class="trends-panel">
+        <div class="trend-title">VIBE SOCIAL // LINKEDIN / FB / IG</div>
+        <div id="social-list"></div>
+    </div>
+
+    <div class="briefing-box">
+        <ul id="briefing-list" class="briefing-list"></ul>
+    </div>
+</div>
+
+<script>
+    const API_KEY = "AIzaSyDYeRO1K8cMLzTF33Aee4YmwCf14-RB384";
+    const MODEL = "gemini-2.5-flash";
+
+    const RSS_FEEDS = [
+        'https://eco.sapo.pt/feed/',
+        'https://tek.sapo.pt/feed',
+        'https://www.jornaldenegocios.pt/rss',
+        'http://feeds.feedburner.com/TechCrunch/'
+    ];
+
+    async function launchRadar() {
+        document.getElementById('hero').style.display = 'none';
+        document.getElementById('loader').style.display = 'block';
+
+        try {
+            let dataContext = "";
+            for (let url of RSS_FEEDS) {
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
+                const d = await res.json();
+                d.items.slice(0, 4).forEach(i => dataContext += `S: ${d.feed.title} | T: ${i.title} | L: ${i.link}\n`);
+            }
+
+            const prompt = `Analisa estas notícias: ${dataContext}. 
+            1. Escolhe 5 conteúdos relevantes sobre IA/Empresas. Classifica como NOTÍCIA, PODCAST ou VÍDEO.
+            2. Para cada um, escreve um resumo de exatamente 2 frases curtas e diretas.
+            3. Estima o Buzz atual (0-100) para LinkedIn, Facebook e Instagram sobre IA.
+            4. Cria 5 tópicos (bullet points) finais para um roteiro de vídeo curto.
+            Formato Estrito:
+            NEWS: [TIPO] | [Fonte] | [Headline] | [Resumo] | [Link]
+            ---
+            SOCIAL: [LinkedIn|Valor] | [Facebook|Valor] | [Instagram|Valor]
+            ---
+            TOPICOS: [Tópico]`;
+
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+
+            const result = await aiRes.json();
+            renderApp(result.candidates[0].content.parts[0].text);
+        } catch (e) { alert("ERRO: O Radar não conseguiu aceder aos dados."); }
+        finally {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+        }
+    }
+
+    function renderApp(text) {
+        const parts = text.split('---');
+        const newsPart = parts[0];
+        const socialPart = parts[1];
+        const topicsPart = parts[2];
+
+        // Render Notícias
+        const feed = document.getElementById('news-feed');
+        feed.innerHTML = newsPart.replace('NEWS:', '').trim().split('\n').map((l, i) => {
+            const data = l.split('|').map(s => s.trim());
+            if(data.length < 5) return '';
+            const [type, source, head, sum, url] = data;
+            const tag = type.toLowerCase().includes('podcast') ? 'tag-podcast' : (type.toLowerCase().includes('vídeo') ? 'tag-video' : 'tag-noticia');
+            const domain = new URL(url).hostname;
+            return `
+                <div class="card" id="card-${i}">
+                    <div class="card-header">
+                        <div class="source-box">
+                            <img src="https://www.google.com/s2/favicons?domain=${domain}" class="source-logo">
+                            <span style="font-size:10px">${source}</span>
+                        </div>
+                        <span class="tag ${tag}">${type}</span>
+                    </div>
+                    <div class="card-body">
+                        <a href="${url}" target="_blank" class="headline">${head}</a>
+                        <p class="summary">${sum}</p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-tool" onclick="this.style.color='var(--accent)'"><i data-lucide="star" size="14"></i> FAVORITO</button>
+                        <button class="btn-tool" onclick="document.getElementById('card-${i}').remove()"><i data-lucide="x" size="14"></i> REMOVER</button>
+                    </div>
+                </div>`;
+        }).join('');
+
+        // Render Gráfico Social
+        const sList = document.getElementById('social-list');
+        sList.innerHTML = socialPart.replace('SOCIAL:', '').trim().split('|').map(s => {
+            const clean = s.replace('[','').replace(']','');
+            const [name, val] = clean.split('|');
+            return `
+                <div class="bar-container">
+                    <div class="bar-label"><span>${name}</span><span>${val}%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" style="width:${val}%"></div></div>
+                </div>`;
+        }).join('');
+
+        // Render Tópicos Briefing
+        const tList = document.getElementById('briefing-list');
+        tList.innerHTML = topicsPart.replace('TOPICOS:', '').trim().split('\n').map(t => `<li>${t.replace('[','').replace(']','')}</li>`).join('');
+
+        lucide.createIcons();
+    }
+</script>
+</body>
+</html>
