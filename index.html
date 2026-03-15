@@ -3,22 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LMM RADAR PRO - V25.0</title>
+    <title>LMM RADAR PRO - V26.0</title>
     <style>
-        :root { --bg: #030303; --accent: #00ff88; --card: #0d1117; --text: #ffffff; --nav-bg: #111; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
+        :root { --bg: #030303; --accent: #00ff88; --card: #0d1117; --text: #ffffff; --danger: #ff4444; --nav-bg: #111; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
+        
+        /* BANNER */
         .banner { width: 100%; height: 120px; position: relative; overflow: hidden; border-bottom: 2px solid var(--accent); }
         video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
         .banner-txt { position: absolute; bottom: 10px; left: 15px; color: var(--accent); font-weight: 900; font-size: 11px; text-transform: uppercase; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; font-weight: bold; flex: 1; }
+
+        /* NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #666; font-size: 9px; font-weight: bold; flex: 1; transition: 0.3s; }
         .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; }
+
+        /* SECTIONS */
         .page-section { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .page-section.active { display: block; }
-        .card { background: var(--card); border-radius: 12px; margin-bottom: 12px; border: 1px solid #222; padding: 15px; }
-        .btn-run { background: var(--accent); color: #000; padding: 10px; border-radius: 6px; border: none; font-weight: 900; width: 100%; margin-bottom: 20px; }
+
+        /* CARDS */
+        .card { background: var(--card); border-radius: 12px; margin-bottom: 12px; border: 1px solid #222; padding: 15px; position: relative; }
+        .card-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .card-meta { font-size: 10px; font-weight: 900; color: var(--accent); text-transform: uppercase; }
+        .card-title { font-size: 15px; font-weight: bold; margin-bottom: 8px; line-height: 1.3; }
+        .card-desc { font-size: 12px; color: #b0b8c1; line-height: 1.5; margin-bottom: 15px; }
+
+        /* BUTTONS */
+        .btn { padding: 10px; border-radius: 6px; border: none; font-size: 9px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-run { background: var(--accent); color: #000; width: 100%; margin-bottom: 20px; font-size: 12px; }
+        .btn-run:active { transform: scale(0.98); }
+        .actions { display: flex; gap: 8px; border-top: 1px solid #222; padding-top: 12px; }
+        .btn-add { background: #1a1a1a; color: var(--accent); border: 1px solid var(--accent); flex: 1; }
+        .btn-add.active { background: var(--accent); color: #000; }
+        .btn-archive { background: #1a1a1a; color: #fff; border: 1px solid #444; flex: 1; }
+
+        /* TRENDS */
+        .trend-bar { margin-bottom: 15px; cursor: pointer; }
+        .bar-info { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; font-weight: bold; }
+        .bar-bg { background: #111; height: 8px; border-radius: 4px; border: 1px solid #222; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--accent); width: 0; transition: width 1s ease-out; box-shadow: 0 0 10px var(--accent); }
+
+        #summary-box { background: #000; padding: 15px; border: 1px dashed var(--accent); border-radius: 10px; font-size: 13px; line-height: 1.6; color: #eee; white-space: pre-wrap; margin-bottom: 20px; }
         .key-input { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -29,41 +59,53 @@
 </div>
 
 <div id="section-news" class="page-section active">
-    <button class="btn-run" onclick="startRadar()">EXECUTAR RADAR (RUN)</button>
+    <button class="btn btn-run" onclick="startRadar()">EXECUTAR RADAR (RUN)</button>
     <div id="feed"></div>
 </div>
 
-<div id="section-trends" class="page-section"><div id="trends-list"></div></div>
+<div id="section-trends" class="page-section">
+    <h3 style="color:var(--accent); font-size:12px; margin-bottom:20px;">SOCIAL TRENDS (LIVE)</h3>
+    <div id="trends-list"></div>
+</div>
 
-<div id="section-archive" class="page-section"><div id="archive-list"></div></div>
+<div id="section-archive" class="page-section">
+    <h3 style="color:var(--accent); font-size:12px; margin-bottom:20px;">ARQUIVO DE ENGENHARIA</h3>
+    <div id="archive-list"></div>
+</div>
 
-<div id="section-video" class="page-section"><div id="video-list"></div></div>
+<div id="section-video" class="page-section">
+    <h3 style="color:var(--accent); font-size:12px; margin-bottom:20px;">GUIÃO DO VÍDEO</h3>
+    <div id="summary-box">Seleciona notícias para gerar o resumo de 3 linhas...</div>
+    <button class="btn btn-run" onclick="copySummary()">COPIAR GUIÃO COMPLETO</button>
+    <div id="video-selection-list" style="margin-top:20px;"></div>
+</div>
 
 <div id="section-settings" class="page-section">
-    <h3 style="color:var(--accent); font-size:12px;">CHAVE DE SEGURANÇA (API KEY)</h3>
-    <p style="font-size:11px; color:#888;">Esta chave fica guardada apenas no teu iPhone e nunca será vista pelo GitHub.</p>
-    <input type="password" id="api-key-input" class="key-input" placeholder="Cola aqui a tua chave AIzaSy...">
-    <button class="btn-run" onclick="saveKey()">GUARDAR NO TELEMÓVEL</button>
+    <h3 style="color:var(--accent); font-size:12px;">SETUP DE SEGURANÇA</h3>
+    <input type="password" id="api-key-input" class="key-input" placeholder="Cola aqui a tua API Key...">
+    <button class="btn btn-run" onclick="saveKey()">GUARDAR NO IPHONE</button>
 </div>
 
 <div class="bottom-nav">
-    <div class="nav-item active" onclick="switchPage('news', this)">📰<br>NOTÍCIAS</div>
-    <div class="nav-item" onclick="switchPage('trends', this)">📈<br>TRENDS</div>
-    <div class="nav-item" onclick="switchPage('archive', this)">📁<br>ARQUIVO</div>
-    <div class="nav-item" onclick="switchPage('video', this)">🎬<br>VÍDEO</div>
-    <div class="nav-item" onclick="switchPage('settings', this)">⚙️<br>SETUP</div>
+    <div class="nav-item active" onclick="switchPage('news', this)"><span class="nav-icon">📰</span>NOTÍCIAS</div>
+    <div class="nav-item" onclick="switchPage('trends', this)"><span class="nav-icon">📈</span>TRENDS</div>
+    <div class="nav-item" onclick="switchPage('archive', this)"><span class="nav-icon">📁</span>ARQUIVO</div>
+    <div class="nav-item" onclick="switchPage('video', this)"><span class="nav-icon">🎬</span>VÍDEO</div>
+    <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span>SETUP</div>
 </div>
 
 <script>
-    // Função para guardar a chave no iPhone
+    let allNews = [];
+    let archivedNews = JSON.parse(localStorage.getItem('lmm_archive') || '[]');
+    let selectedNews = JSON.parse(localStorage.getItem('lmm_video') || '[]');
+    let currentFilter = null;
+
     function saveKey() {
         const key = document.getElementById('api-key-input').value;
         if(key.startsWith('AIza')) {
             localStorage.setItem('lmm_key', key);
-            alert("✅ Chave guardada com sucesso no teu iPhone!");
+            alert("Chave guardada!");
             switchPage('news', document.querySelector('.nav-item'));
-        } else {
-            alert("❌ Chave inválida. Deve começar por 'AIza'.");
         }
     }
 
@@ -72,33 +114,116 @@
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('section-' + pageId).classList.add('active');
         el.classList.add('active');
+        if(pageId === 'video') renderVideoSection();
+        if(pageId === 'archive') renderArchive();
     }
 
     async function startRadar() {
         const key = localStorage.getItem('lmm_key');
-        if(!key) {
-            alert("⚠️ Engenheiro, vai primeiro ao ícone SETUP (⚙️) e cola a tua chave!");
-            return;
-        }
+        if(!key) { switchPage('settings', document.querySelectorAll('.nav-item')[4]); return; }
         
         document.getElementById('feed').innerHTML = '<p style="text-align:center; color:var(--accent);">_A INTERCEPTAR SINAIS...</p>';
         
         try {
-            const prompt = "Dá-me 6 notícias: 3 🌐 Mundiais de IA e 3 🇵🇹 de Portugal (Tecnologia/Economia). Formato: ICON | TAG | FONTE | TITULO | RESUMO_3_LINHAS. No fim, SOCIAL: Tag1:90, Tag2:70...";
-            
+            const prompt = "Dá-me 6 notícias: 3 🌐 Mundiais de IA e 3 🇵🇹 de Portugal (Tecnologia). Formato: ICON | TAG | FONTE | TITULO | RESUMO_3_LINHAS. No fim, SOCIAL: Tag1:90, Tag2:70...";
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             const data = await res.json();
-            // Lógica de renderização simplificada para teste
-            document.getElementById('feed').innerHTML = '<p style="text-align:center;">Radar pronto! Sistema a processar dados...</p>';
-            console.log(data);
-        } catch (e) {
-            alert("❌ Erro de ligação. Verifica a tua chave no SETUP.");
-        }
+            parseResponse(data.candidates[0].content.parts[0].text);
+        } catch (e) { alert("Erro de sinal. Verifica a chave no SETUP."); }
     }
+
+    function parseResponse(text) {
+        const parts = text.split('SOCIAL:');
+        const lines = parts[0].split('\n').filter(l => l.includes('|'));
+        allNews = lines.map(line => {
+            const [icon, tag, src, tit, res] = line.split('|').map(s => s.trim());
+            return { id: Math.random(), icon, tag, src, tit, res };
+        });
+        renderTrends(parts[1]);
+        renderFeed();
+    }
+
+    function renderFeed() {
+        const list = currentFilter ? allNews.filter(n => n.tag === currentFilter) : allNews;
+        document.getElementById('feed').innerHTML = list.map(n => {
+            const isSel = selectedNews.some(s => s.tit === n.tit);
+            return `
+                <div class="card">
+                    <div class="card-header"><span class="card-meta">${n.tag} • ${n.src}</span><span>${n.icon}</span></div>
+                    <div class="card-title">${n.tit}</div>
+                    <div class="card-desc">${n.res}</div>
+                    <div class="actions">
+                        <button class="btn btn-add ${isSel ? 'active' : ''}" onclick="toggleVideo('${n.id}', 'feed')">${isSel ? '✓ NO VÍDEO' : '+ VÍDEO'}</button>
+                        <button class="btn btn-archive" onclick="archiveItem('${n.id}')">📁 ARQUIVAR</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.toggleVideo = (id, from) => {
+        const source = from === 'feed' ? allNews : archivedNews;
+        const item = source.find(n => n.id == id);
+        const idx = selectedNews.findIndex(s => s.tit === item.tit);
+        if(idx > -1) selectedNews.splice(idx, 1); else selectedNews.push(item);
+        localStorage.setItem('lmm_video', JSON.stringify(selectedNews));
+        renderFeed(); renderArchive(); renderVideoSection();
+    };
+
+    window.archiveItem = (id) => {
+        const item = allNews.find(n => n.id == id);
+        archivedNews.push(item);
+        localStorage.setItem('lmm_archive', JSON.stringify(archivedNews));
+        allNews = allNews.filter(n => n.id != id);
+        renderFeed();
+    };
+
+    function renderTrends(socialText) {
+        if(!socialText) return;
+        const trends = socialText.split(',').map(t => {
+            const [n, v] = t.split(':');
+            return { name: n.trim(), val: v.replace(/\D/g, '') };
+        });
+        document.getElementById('trends-list').innerHTML = trends.map(t => `
+            <div class="trend-bar" onclick="currentFilter='${t.name}'; switchPage('news', document.querySelector('.nav-item'))">
+                <div class="bar-info"><span>${t.name}</span><span>${t.val}%</span></div>
+                <div class="bar-bg"><div class="bar-fill" style="width:${t.val}%"></div></div>
+            </div>
+        `).join('');
+    }
+
+    function renderArchive() {
+        document.getElementById('archive-list').innerHTML = archivedNews.map(n => `
+            <div class="card" style="opacity:0.8">
+                <div class="card-title" style="font-size:13px">${n.tit}</div>
+                <div class="actions">
+                    <button class="btn btn-add" onclick="toggleVideo('${n.id}', 'archive')">+ VÍDEO</button>
+                    <button class="btn btn-archive" style="color:var(--danger); border-color:var(--danger)" onclick="deleteArchive('${n.id}')">🗑️ APAGAR</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.deleteArchive = (id) => {
+        archivedNews = archivedNews.filter(n => n.id != id);
+        localStorage.setItem('lmm_archive', JSON.stringify(archivedNews));
+        renderArchive();
+    };
+
+    function renderVideoSection() {
+        const box = document.getElementById('summary-box');
+        if(selectedNews.length === 0) { box.innerText = "Seleciona notícias no feed..."; return; }
+        box.innerText = selectedNews.map((n, i) => `TEMA ${i+1}: ${n.tit}\nGUIÃO: ${n.res}\n`).join('\n---\n\n');
+    }
+
+    window.copySummary = () => {
+        navigator.clipboard.writeText(document.getElementById('summary-box').innerText);
+        alert("Guião copiado!");
+    };
 </script>
 </body>
 </html>
