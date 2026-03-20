@@ -1,104 +1,485 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LMM RADAR V30.0</title>
-    <style>
-        :root { --bg: #030303; --accent: #00ff88; --card: #0d1117; --text: #ffffff; --nav-bg: #111; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
-        .banner { width: 100%; height: 120px; border-bottom: 2px solid var(--accent); position: relative; overflow: hidden; }
-        video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; }
-        .nav-item { color: #666; font-size: 10px; text-align: center; cursor: pointer; flex: 1; }
-        .nav-item.active { color: var(--accent); }
-        .page-section { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-        .page-section.active { display: block; }
-        .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-bottom: 15px; }
-        .btn-run { background: var(--accent); color: #000; }
-        .btn-test { background: #1a1a1a; color: #fff; border: 1px solid #444; }
-        .key-input { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
-        #debug-log { background: #000; color: #ffbc00; padding: 10px; font-family: monospace; font-size: 10px; border-radius: 5px; margin-top: 10px; border: 1px solid #333; white-space: pre-wrap; }
-        .card { background: var(--card); border-radius: 12px; margin-bottom: 12px; border: 1px solid #222; padding: 15px; }
-        .card-header { display: flex; justify-content: space-between; font-size: 10px; color: var(--accent); font-weight: 900; margin-bottom: 8px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ObaniA Resolve — O Botão Mágico</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Fraunces:ital,wght@1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --deep:   #020B1A;
+  --dark:   #040F22;
+  --accent: #0D6EFD;
+  --bright: #1E8FFF;
+  --glow:   #3BAAFF;
+  --white:  #FFFFFF;
+  --soft:   rgba(255,255,255,0.55);
+  --softer: rgba(255,255,255,0.25);
+  --panel:  rgba(13,30,60,0.75);
+  --border: rgba(30,143,255,0.2);
+}
+html { scroll-behavior: smooth; }
+body { background: var(--deep); color: var(--white); font-family: 'Nunito', sans-serif; overflow-x: hidden; }
+
+.stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.stars::before { content: ''; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 8% 12%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 22% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 38% 72%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 52% 18%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 67% 58%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 82% 88%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 76% 10%, rgba(100,180,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 44% 35%, rgba(255,255,255,0.5) 0%, transparent 100%); }
+.ray-burst { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 200vmax; height: 200vmax;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(13,110,253,0.04) 2deg, transparent 4deg, transparent 90deg, rgba(13,110,253,0.07) 92deg, transparent 94deg, transparent 210deg, rgba(13,110,253,0.06) 212deg, transparent 214deg, transparent 270deg, rgba(30,143,255,0.07) 272deg, transparent 274deg);
+  pointer-events: none; z-index: 0; animation: slow-rotate 60s linear infinite; }
+@keyframes slow-rotate { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
+.orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(80px); }
+.orb-1 { width: 600px; height: 600px; top: -200px; left: -100px; background: radial-gradient(circle, rgba(13,110,253,0.18) 0%, transparent 70%); }
+.orb-2 { width: 500px; height: 500px; bottom: -150px; right: -100px; background: radial-gradient(circle, rgba(30,143,255,0.15) 0%, transparent 70%); }
+section, .ticker { position: relative; z-index: 1; }
+
+/* HERO */
+.hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 80px 24px 60px; }
+.brand-logo { font-size: clamp(60px,12vw,110px); font-weight: 800; letter-spacing: -2px; margin-bottom: 6px; display: inline-block; }
+.i-dot { color: var(--bright); position: relative; display: inline-block; }
+.i-dot::before { content: ''; position: absolute; top: -4px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; background: var(--bright); box-shadow: 0 0 20px var(--bright), 0 0 40px var(--bright); }
+.brand-resolve { font-size: clamp(14px,3.5vw,30px); font-weight: 700; letter-spacing: 8px; text-transform: uppercase; color: var(--glow); margin-bottom: 32px; text-shadow: 0 0 30px rgba(59,170,255,0.5); }
+.hero-tagline { font-size: clamp(14px,2vw,17px); color: var(--soft); max-width: 580px; line-height: 1.7; font-weight: 300; margin-bottom: 44px; }
+.magic-btn-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 52px; }
+.magic-btn { width: 150px; height: 150px; border-radius: 50%; border: none; cursor: pointer; position: relative;
+  background: radial-gradient(circle at 35% 35%, #3BAAFF, #0A5FD6);
+  box-shadow: 0 0 0 8px rgba(13,110,253,0.15),0 0 0 16px rgba(13,110,253,0.08),0 0 60px rgba(30,143,255,0.5),inset 0 2px 4px rgba(150,220,255,0.3),inset 0 -4px 8px rgba(0,0,0,0.4);
+  transition: all 0.2s; animation: pb 3s ease-in-out infinite; }
+.magic-btn:hover { transform: scale(1.07); box-shadow: 0 0 0 12px rgba(13,110,253,0.25),0 0 0 22px rgba(13,110,253,0.1),0 0 90px rgba(30,143,255,0.7),inset 0 2px 4px rgba(150,220,255,0.3),inset 0 -4px 8px rgba(0,0,0,0.4); }
+.magic-btn:active { transform: scale(0.95) translateY(3px); }
+.magic-btn::after { content:''; position: absolute; inset: 14px; border-radius: 50%; border-top: 2px solid rgba(255,255,255,0.2); pointer-events: none; }
+.magic-btn-inner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.magic-btn-inner svg { width: 48px; height: 48px; color: white; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
+@keyframes pb {
+  0%,100%{box-shadow:0 0 0 8px rgba(13,110,253,0.15),0 0 0 16px rgba(13,110,253,0.08),0 0 60px rgba(30,143,255,0.5),inset 0 2px 4px rgba(150,220,255,0.3),inset 0 -4px 8px rgba(0,0,0,0.4);}
+  50%{box-shadow:0 0 0 12px rgba(13,110,253,0.22),0 0 0 24px rgba(13,110,253,0.1),0 0 90px rgba(30,143,255,0.7),inset 0 2px 4px rgba(150,220,255,0.3),inset 0 -4px 8px rgba(0,0,0,0.4);} }
+.magic-btn-label { font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.55); text-transform: uppercase; font-weight: 700; }
+.hero-stats { display: flex; gap: 44px; flex-wrap: wrap; justify-content: center; }
+.hero-stat-num { font-size: 32px; font-weight: 800; color: var(--glow); display: block; text-shadow: 0 0 20px rgba(59,170,255,0.4); }
+.hero-stat-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--soft); }
+
+.ticker { background: var(--accent); padding: 11px 0; overflow: hidden; white-space: nowrap; }
+.ticker-inner { display: inline-block; animation: tick 30s linear infinite; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 700; }
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+.sec { padding: 88px 40px; max-width: 1280px; margin: 0 auto; }
+.sec-tag { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--bright); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.sec-tag::before { content:''; display:inline-block; width:28px; height:1px; background:var(--bright); }
+.sec-title { font-size: clamp(28px,5vw,52px); font-weight: 800; line-height: 1.1; margin-bottom: 16px; }
+.sec-title em { color: var(--glow); font-style: normal; }
+.sec-sub { font-size: 15px; color: var(--soft); max-width: 540px; line-height: 1.7; font-weight: 300; margin-bottom: 52px; }
+
+.problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.prob-card { background: var(--panel); border: 1px solid var(--border); padding: 38px; position: relative; overflow: hidden; transition: border-color 0.3s, background 0.3s; backdrop-filter: blur(12px); }
+.prob-card:hover { border-color: rgba(30,143,255,0.5); background: rgba(13,50,100,0.6); }
+.prob-num { position: absolute; top: 8px; right: 20px; font-size: 76px; font-weight: 900; color: rgba(13,110,253,0.08); line-height: 1; }
+.prob-icon { width: 38px; height: 38px; margin-bottom: 16px; color: var(--bright); }
+.prob-card h3 { font-size: 19px; font-weight: 700; margin-bottom: 9px; }
+.prob-card p { font-size: 14px; color: var(--soft); line-height: 1.8; font-weight: 300; }
+
+.how-section { background: rgba(13,30,60,0.5); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 88px 40px; position: relative; z-index: 1; }
+.how-inner { max-width: 1280px; margin: 0 auto; }
+.steps-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; margin-top: 52px; position: relative; }
+.steps-row::after { content:''; position: absolute; top: 34px; left: 12%; right: 12%; height: 1px; background: linear-gradient(to right, transparent, var(--accent), transparent); opacity: 0.5; pointer-events: none; }
+.step { padding: 0 18px; text-align: center; position: relative; z-index: 1; }
+.step-circle { width: 68px; height: 68px; border-radius: 50%; border: 1px solid var(--accent); background: var(--dark); display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; font-size: 22px; font-weight: 800; color: var(--bright); transition: all 0.3s; }
+.step:hover .step-circle { background: var(--accent); color: white; box-shadow: 0 0 24px rgba(13,110,253,0.5); transform: scale(1.1); }
+.step h4 { font-size: 14px; font-weight: 700; margin-bottom: 7px; }
+.step p { font-size: 13px; color: var(--soft); line-height: 1.7; font-weight: 300; }
+
+.cases-section { padding: 88px 40px; max-width: 1280px; margin: 0 auto; }
+.case-card { background: var(--panel); border: 1px solid var(--border); backdrop-filter: blur(12px); margin-bottom: 3px; }
+.case-header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px; padding: 26px 34px; cursor: pointer; transition: background 0.3s; }
+.case-header:hover { background: rgba(13,60,120,0.4); }
+.case-badge { padding: 5px 13px; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; font-weight: 700; white-space: nowrap; }
+.badge-print { background: rgba(255,140,0,0.15); color: #FFA040; border: 1px solid rgba(255,140,0,0.3); }
+.badge-log   { background: rgba(13,110,253,0.15); color: var(--glow); border: 1px solid rgba(13,110,253,0.3); }
+.case-title-wrap h3 { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+.case-title-wrap .meta { font-size: 10px; color: var(--soft); letter-spacing: 2px; text-transform: uppercase; }
+.case-arrow { width: 22px; height: 22px; color: var(--bright); transition: transform 0.3s; flex-shrink: 0; }
+.case-card.open .case-arrow { transform: rotate(90deg); }
+.case-body { display: none; padding: 0 34px 34px; border-top: 1px solid rgba(30,143,255,0.1); }
+.case-card.open .case-body { display: block; }
+.scenario { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 26px; }
+.scenario-col h5 { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--soft); margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.mistake-list, .solution-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.mistake-list li, .solution-list li { font-size: 13px; color: var(--soft); line-height: 1.6; padding-left: 18px; position: relative; font-weight: 300; }
+.mistake-list li::before { content:'✗'; position: absolute; left: 0; color: #F87171; }
+.solution-list li::before { content:'→'; position: absolute; left: 0; color: var(--bright); }
+.result-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+.rp { padding: 6px 14px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.rp-g { background: rgba(74,222,128,0.1); color: #4ADE80; border: 1px solid rgba(74,222,128,0.3); }
+.rp-b { background: rgba(13,110,253,0.1); color: var(--glow); border: 1px solid rgba(13,110,253,0.3); }
+.rp-a { background: rgba(255,183,0,0.1); color: #FFD060; border: 1px solid rgba(255,183,0,0.3); }
+
+.workers-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: 52px; }
+.wcard { background: var(--panel); border: 1px solid var(--border); padding: 32px; backdrop-filter: blur(12px); transition: all 0.3s; }
+.wcard:hover { border-color: rgba(30,143,255,0.45); transform: translateY(-4px); }
+.wcard-avatar { font-size: 28px; margin-bottom: 16px; }
+.wcard-role { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--bright); margin-bottom: 7px; }
+.wcard-name { font-size: 19px; font-weight: 800; margin-bottom: 11px; }
+.wcard-quote { font-size: 13px; color: var(--soft); line-height: 1.7; font-style: italic; font-family: 'Fraunces', serif; }
+.wcard-status { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--soft); font-weight: 600; }
+.sdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.contact-section { padding: 110px 40px; text-align: center; position: relative; z-index: 1; }
+.contact-section::before { content:''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1px; height: 70px; background: linear-gradient(to bottom, transparent, var(--accent)); }
+.contact-logo { font-size: clamp(42px,10vw,84px); font-weight: 800; letter-spacing: -2px; margin-bottom: 10px; display: inline-block; }
+.contact-logo .blue { color: var(--bright); }
+.contact-tagline { font-size: 15px; color: var(--soft); margin-bottom: 42px; font-weight: 300; }
+.contact-cards { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.contact-card { background: var(--panel); border: 1px solid var(--border); padding: 17px 30px; display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 600; color: var(--white); transition: all 0.3s; backdrop-filter: blur(12px); text-decoration: none; }
+.contact-card:hover { background: rgba(13,110,253,0.2); border-color: rgba(30,143,255,0.5); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(13,110,253,0.2); }
+.contact-card svg { width: 19px; height: 19px; color: var(--glow); flex-shrink: 0; }
+footer { background: rgba(4,15,34,0.9); border-top: 1px solid var(--border); padding: 26px 40px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+.footer-brand { font-size: 19px; font-weight: 800; letter-spacing: -1px; }
+.footer-brand .blue { color: var(--bright); }
+.footer-copy { font-size: 11px; color: var(--softer); letter-spacing: 2px; text-transform: uppercase; }
+
+/* ═══════════ CHATBOT ═══════════ */
+.chat-overlay { position: fixed; inset: 0; z-index: 10000; background: rgba(2,8,20,0.88); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.35s; backdrop-filter: blur(14px); padding: 20px; }
+.chat-overlay.active { opacity: 1; pointer-events: all; }
+.chat-window { width: 100%; max-width: 500px; background: linear-gradient(160deg, rgba(10,25,55,0.98), rgba(4,12,30,0.99)); border: 1px solid rgba(30,143,255,0.3); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 80px rgba(13,110,253,0.25), 0 40px 80px rgba(0,0,0,0.5); transform: scale(0.92) translateY(20px); transition: transform 0.35s; max-height: 88vh; }
+.chat-overlay.active .chat-window { transform: scale(1) translateY(0); }
+
+.chat-header { background: linear-gradient(135deg, rgba(13,110,253,0.2), rgba(10,25,55,0.8)); border-bottom: 1px solid rgba(30,143,255,0.2); padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+.chat-avatar { width: 42px; height: 42px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #3BAAFF, #0A5FD6); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 0 14px rgba(30,143,255,0.4); position: relative; }
+.chat-avatar::after { content:''; position: absolute; bottom: 1px; right: 1px; width: 9px; height: 9px; border-radius: 50%; background: #4ADE80; border: 2px solid rgba(4,12,30,0.9); animation: bk 2s ease-in-out infinite; }
+@keyframes bk { 0%,100%{opacity:1}50%{opacity:0.4} }
+.chat-header-info h4 { font-size: 14px; font-weight: 800; }
+.chat-header-info span { font-size: 11px; color: var(--glow); letter-spacing: 1px; }
+.chat-close { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--soft); font-size: 18px; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s; }
+.chat-close:hover { background: rgba(255,255,255,0.1); color: white; }
+
+.chat-body { flex: 1; overflow-y: auto; padding: 20px 18px 14px; display: flex; flex-direction: column; gap: 0; scroll-behavior: smooth; }
+.chat-body::-webkit-scrollbar { width: 3px; }
+.chat-body::-webkit-scrollbar-thumb { background: rgba(30,143,255,0.3); border-radius: 3px; }
+
+.bubble-row { display: flex; gap: 8px; margin-bottom: 14px; align-items: flex-end; }
+.bubble-row.user { flex-direction: row-reverse; }
+.bav { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.bav.bot { background: radial-gradient(circle at 35% 35%, #3BAAFF, #0A5FD6); box-shadow: 0 0 8px rgba(30,143,255,0.4); }
+.bav.usr { background: rgba(255,255,255,0.1); }
+.bubble { max-width: 80%; padding: 11px 14px; border-radius: 15px; font-size: 14px; line-height: 1.55; animation: popin 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes popin { from{opacity:0;transform:scale(0.8) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.bubble.bot { background: rgba(13,40,90,0.85); border: 1px solid rgba(30,143,255,0.2); border-bottom-left-radius: 4px; }
+.bubble.user { background: linear-gradient(135deg,#1E5FDD,#0A4FC8); border-bottom-right-radius: 4px; font-weight: 600; }
+
+.typing-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 14px; }
+.typing-bubble { background: rgba(13,40,90,0.85); border: 1px solid rgba(30,143,255,0.2); border-bottom-left-radius: 4px; padding: 13px 16px; border-radius: 15px; display: flex; gap: 4px; align-items: center; }
+.td { width: 6px; height: 6px; border-radius: 50%; background: var(--bright); animation: tdot 1.2s ease-in-out infinite; }
+.td:nth-child(2){animation-delay:0.2s} .td:nth-child(3){animation-delay:0.4s}
+@keyframes tdot { 0%,60%,100%{opacity:0.3;transform:translateY(0)} 30%{opacity:1;transform:translateY(-4px)} }
+
+.choices-wrap { padding: 2px 0 6px; display: flex; flex-direction: column; gap: 7px; animation: popin 0.3s ease; }
+.choice-btn { background: rgba(13,40,90,0.65); border: 1px solid rgba(30,143,255,0.3); color: var(--white); padding: 10px 14px; border-radius: 11px; font-family: 'Nunito',sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s; display: flex; align-items: center; gap: 9px; }
+.choice-btn:hover { background: rgba(13,110,253,0.3); border-color: rgba(30,143,255,0.6); transform: translateX(4px); }
+.ci { font-size: 17px; flex-shrink: 0; }
+
+.sol-card { background: linear-gradient(135deg,rgba(13,60,120,0.7),rgba(10,35,80,0.8)); border: 1px solid rgba(30,143,255,0.35); border-radius: 13px; padding: 16px; margin-top: 4px; animation: popin 0.4s ease; }
+.sol-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--glow); margin-bottom: 11px; display: flex; align-items: center; gap: 7px; }
+.sol-title::before { content:''; width: 6px; height: 6px; border-radius: 50%; background: #4ADE80; animation: bk 1.5s ease-in-out infinite; flex-shrink: 0; }
+.sol-steps { display: flex; flex-direction: column; gap: 7px; }
+.sol-step { display: flex; gap: 9px; align-items: flex-start; }
+.sol-num { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.sol-text { font-size: 13px; color: var(--white); line-height: 1.5; }
+.sol-result { margin-top: 12px; padding: 9px 12px; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); border-radius: 7px; font-size: 12px; color: #4ADE80; font-weight: 700; letter-spacing: 1px; }
+.restart-btn { width: 100%; margin-top: 11px; padding: 9px; background: rgba(13,110,253,0.15); border: 1px solid rgba(30,143,255,0.3); color: var(--glow); font-family: 'Nunito',sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-radius: 9px; cursor: pointer; transition: all 0.2s; }
+.restart-btn:hover { background: rgba(13,110,253,0.3); }
+
+@media(max-width:860px){
+  .problem-grid,.scenario,.workers-grid{grid-template-columns:1fr}
+  .steps-row{grid-template-columns:1fr 1fr} .steps-row::after{display:none}
+  .sec,.cases-section,.how-section{padding:60px 20px}
+  .case-header{grid-template-columns:1fr auto} .case-badge{display:none}
+  footer{flex-direction:column;gap:14px;text-align:center}
+}
+</style>
 </head>
 <body>
+<div class="stars"></div>
+<div class="ray-burst"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
 
-<div class="banner">
-    <video autoplay muted loop playsinline><source src="gemini_generated_video_134FB941.mp4" type="video/mp4"></video>
+<section class="hero">
+  <div class="brand-logo">Oban<span class="i-dot">i</span>A</div>
+  <div class="brand-resolve">Resolve</div>
+  <p class="hero-tagline">O botão mágico que resolve qualquer problema operacional — instantaneamente — mesmo que o operador nunca tenha visto o problema antes.</p>
+  <div class="magic-btn-wrap">
+    <button class="magic-btn" onclick="openChat()">
+      <div class="magic-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+    </button>
+    <span class="magic-btn-label">Carregar para Resolver</span>
+  </div>
+  <div class="hero-stats">
+    <div style="text-align:center"><span class="hero-stat-num">3×</span><span class="hero-stat-label" style="display:block">Mais Rápido</span></div>
+    <div style="text-align:center"><span class="hero-stat-num">94%</span><span class="hero-stat-label" style="display:block">Resolve Sem Escalar</span></div>
+    <div style="text-align:center"><span class="hero-stat-num">24/7</span><span class="hero-stat-label" style="display:block">Sempre Disponível</span></div>
+    <div style="text-align:center"><span class="hero-stat-num">0</span><span class="hero-stat-label" style="display:block">Dependência de 1 Expert</span></div>
+  </div>
+</section>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    &nbsp;&nbsp;CONHECIMENTO COLETIVO &nbsp;✦&nbsp; RESOLUÇÃO IMEDIATA &nbsp;✦&nbsp; ZERO PARAGENS &nbsp;✦&nbsp; OBANiA RESOLVE &nbsp;✦&nbsp; TODOS SABEM TUDO &nbsp;✦&nbsp; MELHORIA CONTÍNUA &nbsp;✦&nbsp; CONHECIMENTO COLETIVO &nbsp;✦&nbsp; RESOLUÇÃO IMEDIATA &nbsp;✦&nbsp; ZERO PARAGENS &nbsp;✦&nbsp; OBANiA RESOLVE &nbsp;✦&nbsp; TODOS SABEM TUDO &nbsp;✦&nbsp; MELHORIA CONTÍNUA &nbsp;✦&nbsp;
+  </div>
 </div>
 
-<div id="section-news" class="page-section active">
-    <button class="btn btn-run" onclick="startRadar()">EXECUTAR RADAR</button>
-    <div id="feed"></div>
+<section class="sec">
+  <div class="sec-tag">O Problema Real</div>
+  <h2 class="sec-title">O Saber é <em>Desigual</em><br>nas Operações</h2>
+  <p class="sec-sub">Dois operadores, a mesma máquina, o mesmo problema — um resolve em 2 minutos, o outro para a produção horas. Não é falha humana. É falha de sistema.</p>
+  <div class="problem-grid">
+    <div class="prob-card"><div class="prob-num">01</div><svg class="prob-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><h3>O Saber Está em Poucas Cabeças</h3><p>O operador A resolveu este problema 15 vezes. O B nunca viu. Quando o A falta, a linha para. O conhecimento crítico fica preso em pessoas — e vai embora com elas.</p></div>
+    <div class="prob-card"><div class="prob-num">02</div><svg class="prob-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><h3>O Tempo de Resolução Custa</h3><p>Ligar ao chefe, esperar, explicar, tentar, falhar. Cada minuto parado numa operação industrial custa dinheiro real. E a frustração acumula-se.</p></div>
+    <div class="prob-card"><div class="prob-num">03</div><svg class="prob-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><h3>O Manual Não Responde ao Real</h3><p>Os manuais são genéricos. Os problemas são específicos desta máquina, desta fábrica, deste turno. A solução existe — mas não está acessível no momento certo.</p></div>
+    <div class="prob-card"><div class="prob-num">04</div><svg class="prob-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><h3>O Conhecimento Não Fica na Empresa</h3><p>Um veterano de 20 anos reforma-se. A experiência acumulada desaparece. A organização fica mais vulnerável sem perceber porquê.</p></div>
+  </div>
+</section>
+
+<div class="how-section">
+  <div class="how-inner">
+    <div class="sec-tag">Como Funciona</div>
+    <h2 class="sec-title">Um Botão. <em>Resolução Guiada.</em></h2>
+    <div class="steps-row">
+      <div class="step"><div class="step-circle">01</div><h4>Problema Detectado</h4><p>Carrega no botão. Escolhe o tipo de problema nos balões de resposta rápida.</p></div>
+      <div class="step"><div class="step-circle">02</div><h4>IA Faz as Perguntas Certas</h4><p>O sistema guia com escolhas múltiplas para perceber exatamente a causa real.</p></div>
+      <div class="step"><div class="step-circle">03</div><h4>Solução Passo a Passo</h4><p>Específica para aquele problema. Clara, rápida, sem ambiguidade.</p></div>
+      <div class="step"><div class="step-circle">04</div><h4>Sistema Aprende Sempre</h4><p>Cada resolução melhora o sistema. A organização fica mais inteligente a cada turno.</p></div>
+    </div>
+  </div>
 </div>
 
-<div id="section-settings" class="page-section">
-    <h3 style="color:var(--accent)">SETUP DE ENGENHARIA</h3>
-    <input type="password" id="api-key-input" class="key-input" placeholder="Insere a tua API Key...">
-    <button class="btn btn-run" onclick="saveKey()">1. GUARDAR CHAVE</button>
-    <button class="btn btn-test" onclick="testKey()">2. TESTAR CONEXÃO</button>
-    <div id="debug-log">Pronto para diagnóstico...</div>
+<section class="cases-section">
+  <div class="sec-tag">Casos Reais</div>
+  <h2 class="sec-title">O <em>ObaniA Resolve</em><br>em Ação</h2>
+  <p class="sec-sub">Dois cenários concretos — e como a IA elimina o erro por tentativa-e-erro sem diagnóstico.</p>
+  <div class="case-card" id="case1">
+    <div class="case-header" onclick="toggleCase('case1')">
+      <span class="case-badge badge-print">Impressão Offset</span>
+      <div class="case-title-wrap"><h3>A Cor Não Está Igual — Gráfica Offset</h3><span class="meta">Correspondência de Cor · Linha Afetada</span></div>
+      <svg class="case-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="case-body">
+      <div class="scenario">
+        <div class="scenario-col"><h5>❌ Sem IA — Por Tentativas</h5><ul class="mistake-list"><li>Aumenta volume de tinta sem medir</li><li>Troca tinta sem verificar referência de cor</li><li>Ajusta ficheiro sem comparar com prova aprovada</li><li>Limpa rolos sem confirmar se é essa a causa</li><li>Faz tiragens de teste desperdiçando papel e tinta</li><li>Perde 40-90 minutos — cliente à espera</li></ul></div>
+        <div class="scenario-col"><h5>✦ ObaniA Resolve</h5><ul class="solution-list"><li>Pergunta: qual é o desvio — tonalidade, saturação?</li><li>Verifica: data da última calibração do densitómetro</li><li>Analisa: perfil ICC do ficheiro vs. prova aprovada</li><li>Detecta: temperatura da sala como causa ignorada</li><li>Confirma: se o papel é do mesmo lote</li><li>Apresenta solução em 3 passos em 90 segundos</li></ul></div>
+      </div>
+      <div class="result-bar"><span class="rp rp-g">Resolução: 8 min</span><span class="rp rp-b">Sem desperdício</span><span class="rp rp-a">Poupança: ~180€/ocorrência</span></div>
+    </div>
+  </div>
+  <div class="case-card" id="case2">
+    <div class="case-header" onclick="toggleCase('case2')">
+      <span class="case-badge badge-log">Logística</span>
+      <div class="case-title-wrap"><h3>Encomenda Urgente Não Saiu — Logística</h3><span class="meta">Falha de Expedição · Cliente em Risco</span></div>
+      <svg class="case-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="case-body">
+      <div class="scenario">
+        <div class="scenario-col"><h5>❌ Sem IA — Por Tentativas</h5><ul class="mistake-list"><li>Assume erro do transportador sem verificar WMS</li><li>Procura manualmente sem saber onde a ordem parou</li><li>Escala para o chefe sem informação mínima</li><li>Descobre tarde que a ordem ficou em hold</li><li>Cliente liga, reputação afetada, prazo perdido</li><li>Ninguém regista — o problema repete-se</li></ul></div>
+        <div class="scenario-col"><h5>✦ ObaniA Resolve</h5><ul class="solution-list"><li>Consulta o WMS: localiza o estado da ordem em segundos</li><li>Verifica se ficou em hold — porquê e quem liberta</li><li>Confirma se picking feito mas etiqueta não gerada</li><li>Alerta para divergência de stock como causa comum</li><li>Sugere ação passo a passo com tempo estimado</li><li>Regista incidente — previne repetição automática</li></ul></div>
+      </div>
+      <div class="result-bar"><span class="rp rp-g">Entregue no prazo</span><span class="rp rp-b">Cliente satisfeito</span><span class="rp rp-a">Causa registada</span></div>
+    </div>
+  </div>
+</section>
+
+<div style="background:rgba(13,30,60,0.5);border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;z-index:1;">
+<section class="sec">
+  <div class="sec-tag">Quem Beneficia</div>
+  <h2 class="sec-title">O Mesmo <em>Resultado</em> Para Todos</h2>
+  <div class="workers-grid">
+    <div class="wcard"><div class="wcard-avatar">👷</div><div class="wcard-role">Veterano — 20 anos</div><div class="wcard-name">Manuel Costa</div><p class="wcard-quote">"Resolvo em dois minutos porque já vi 50 vezes. Agora o meu conhecimento fica na empresa mesmo depois de eu sair."</p><div class="wcard-status"><div class="sdot" style="background:#4ADE80"></div>Resolve por experiência</div></div>
+    <div class="wcard"><div class="wcard-avatar">🧑‍🔧</div><div class="wcard-role">Intermédio — 3 anos</div><div class="wcard-name">Sofia Mendes</div><p class="wcard-quote">"Já vi acontecer mas não tenho a certeza dos passos. Com o ObaniA Resolve não preciso de ligar ao Manuel."</p><div class="wcard-status"><div class="sdot" style="background:#FFD060"></div>Resolve com apoio da IA</div></div>
+    <div class="wcard"><div class="wcard-avatar">🆕</div><div class="wcard-role">Novo — 2 meses</div><div class="wcard-name">Diogo Ferreira</div><p class="wcard-quote">"Nunca vi este problema. Segui os passos do botão e resolvi — igual ao veterano. Ninguém ficou à espera."</p><div class="wcard-status"><div class="sdot" style="background:#3BAAFF"></div>Resolve como o veterano</div></div>
+  </div>
+</section>
 </div>
 
-<div class="bottom-nav">
-    <div class="nav-item active" onclick="switchPage('news', this)">📰<br>RADAR</div>
-    <div class="nav-item" onclick="switchPage('settings', this)">⚙️<br>SETUP</div>
+<section class="contact-section">
+  <div class="contact-logo">Oban<span class="blue">i</span>A</div>
+  <p class="contact-tagline">Pronto para eliminar paragens e democratizar o conhecimento na sua operação?</p>
+  <div class="contact-cards">
+    <a href="tel:923194988" class="contact-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.59 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>923 194 988</a>
+    <a href="mailto:obaniatec@gmail.com" class="contact-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>obaniatec@gmail.com</a>
+  </div>
+</section>
+<footer>
+  <div class="footer-brand">Oban<span class="blue">i</span>A</div>
+  <div class="footer-copy">IA Industrial — Conhecimento Sem Fronteiras — 2025</div>
+</footer>
+
+<!-- CHATBOT -->
+<div class="chat-overlay" id="chatOverlay" onclick="closeOut(event)">
+  <div class="chat-window">
+    <div class="chat-header">
+      <div class="chat-avatar">⚡</div>
+      <div class="chat-header-info"><h4>ObaniA Resolve</h4><span>● Online — Pronto para ajudar</span></div>
+      <button class="chat-close" onclick="closeChat()">✕</button>
+    </div>
+    <div class="chat-body" id="chatBody"></div>
+  </div>
 </div>
 
 <script>
-    function log(msg) { document.getElementById('debug-log').innerText = `LOG: ${msg}`; }
+const T = {
+  start:{bot:"Olá! 👋 Sou o **ObaniA Resolve**.\n\nEm que área está o problema?",choices:[{i:"🖨️",l:"Impressão Offset / Gráfica",n:"g_area"},{i:"📦",l:"Logística / Expedição",n:"l_area"},{i:"⚙️",l:"Máquina / Equipamento",n:"m_area"},{i:"👥",l:"Outro problema",n:"outro"}]},
 
-    function saveKey() {
-        const key = document.getElementById('api-key-input').value.trim();
-        if(key.startsWith('AIza')) {
-            localStorage.setItem('lmm_key', key);
-            log("Chave guardada no Safari!");
-        } else { log("Erro: Chave deve começar por AIza."); }
-    }
+  // GRÁFICA
+  g_area:{bot:"Área de **impressão offset**.\n\nQual é o problema principal?",choices:[{i:"🎨",l:"Problema de cor / cor errada",n:"cor_tipo"},{i:"📄",l:"Manchas ou qualidade má",n:"manchas_tipo"},{i:"⚙️",l:"Problema mecânico na máquina",n:"mec_graf"},{i:"🗂️",l:"Problema no ficheiro / pré-press",n:"prepress"}]},
+  cor_tipo:{bot:"Problema de cor. Vamos perceber.\n\nComo é o desvio?",choices:[{i:"🔴",l:"Cor mais escura / saturada demais",n:"cor_esc"},{i:"🌅",l:"Cor mais clara / apagada",n:"cor_clar"},{i:"🟠",l:"Tonalidade errada (ex: azul com verde)",n:"cor_tom"},{i:"🔲",l:"Cor varia ao longo da tiragem",n:"cor_var"}]},
+  cor_esc:{bot:"Cor mais escura. Boa pista!\n\nQuando foi a última **calibração do densitómetro**?",choices:[{i:"✅",l:"Hoje ou ontem — está calibrado",n:"cor_esc2"},{i:"⚠️",l:"Há mais de 3 dias",n:"s_densit"},{i:"❓",l:"Não sei / não temos densitómetro",n:"s_densit"}]},
+  cor_esc2:{bot:"Densitómetro calibrado. O papel é **do mesmo lote** da prova aprovada?",choices:[{i:"✅",l:"Sim, mesmo lote",n:"cor_esc3"},{i:"❌",l:"Não, lote diferente",n:"s_lote"},{i:"❓",l:"Não sei / não verifiquei",n:"s_lote"}]},
+  cor_esc3:{bot:"Última verificação: qual é a **temperatura da sala**?",choices:[{i:"❄️",l:"Abaixo de 20°C",n:"s_fria"},{i:"✅",l:"Entre 20°C e 23°C",n:"s_press"},{i:"🔥",l:"Acima de 23°C",n:"s_quente"}]},
+  cor_var:{bot:"Cor a variar. Quando aparece a variação?",choices:[{i:"🔢",l:"Só nas primeiras 50-100 folhas",n:"s_aquec"},{i:"📊",l:"Ao longo de toda a tiragem",n:"s_visc"},{i:"🔄",l:"De forma aleatória",n:"s_cont"}]},
+  cor_tom:{bot:"Tonalidade errada. O ficheiro foi **validado com a prova aprovada**?",choices:[{i:"✅",l:"Sim, foi validado",n:"s_icc"},{i:"❌",l:"Não foi comparado",n:"s_valprova"},{i:"❓",l:"A prova foi feita noutra máquina",n:"s_icc"}]},
+  cor_clar:{bot:"Cor mais clara. Verificou o **nível de tinta nos tinteiros**?",choices:[{i:"✅",l:"Sim, tinta suficiente",n:"s_rolos"},{i:"❌",l:"Não verifiquei",n:"s_nivel"},{i:"🔄",l:"Tinta nova há pouco tempo",n:"s_tintan"}]},
+  manchas_tipo:{bot:"Como se apresentam as manchas?",choices:[{i:"💧",l:"Manchas de tinta / borrões",n:"s_manch"},{i:"👻",l:"Fantasmas / imagens duplicadas",n:"s_fant"},{i:"🌫️",l:"Velatura / sujidade no fundo",n:"s_vel"},{i:"📏",l:"Impressão fora de registo",n:"s_reg"}]},
+  mec_graf:{bot:"Problema mecânico. Qual é o sintoma?",choices:[{i:"🔊",l:"Ruído estranho / vibração",n:"s_ruido"},{i:"⛔",l:"Máquina parou e não arranca",n:"s_mparagem"},{i:"🔄",l:"Papel a encavar / entupir",n:"s_encav"}]},
+  prepress:{bot:"Problema no ficheiro. Qual é?",choices:[{i:"🎨",l:"Perfil de cor errado (RGB em vez de CMYK)",n:"s_rgb"},{i:"📐",l:"Sangria ou margens incorretas",n:"s_sangr"},{i:"🔤",l:"Fontes não incorporadas",n:"s_font"}]},
 
-    // AJUSTE DE ROTA: Mudamos para v1 e gemini-1.5-flash-latest
-    async function testKey() {
-        const key = localStorage.getItem('lmm_key');
-        if(!key) { log("Nenhuma chave guardada!"); return; }
-        log("A contactar servidores Google (v1)...");
-        
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: "Dá-me 3 notícias curtas de tecnologia de hoje com o formato: TITULO | RESUMO" }] }] })
-            });
-            const data = await res.json();
-            if(res.ok) { 
-                log("✅ SUCESSO! A IA respondeu.");
-                parseResponse(data.candidates[0].content.parts[0].text);
-            }
-            else { log(`❌ ERRO ${res.status}: ${data.error.message}`); }
-        } catch (e) { log("❌ Erro de Rede."); }
-    }
+  // LOGÍSTICA
+  l_area:{bot:"Área de **logística e expedição**.\n\nQual é o problema?",choices:[{i:"📦",l:"Encomenda não saiu / não expedida",n:"l_nsaiu"},{i:"🔍",l:"Não consigo localizar uma encomenda",n:"l_local"},{i:"🏷️",l:"Erro de stock / divergência inventário",n:"l_stock"},{i:"🚚",l:"Problema com transportador",n:"l_transp"}]},
+  l_nsaiu:{bot:"Encomenda não expedida. Já verificou o **estado no WMS/ERP**?",choices:[{i:"✅",l:"Sim — ordem aparece como completa",n:"l_nsaiu2"},{i:"⚠️",l:"Sim — ordem está em HOLD",n:"s_hold"},{i:"❌",l:"Não tenho acesso ao sistema",n:"s_wms"}]},
+  l_nsaiu2:{bot:"Ordem completa mas não saiu. A **etiqueta de transporte** foi impressa?",choices:[{i:"✅",l:"Sim, a etiqueta foi impressa",n:"l_nsaiu3"},{i:"❌",l:"Não, a etiqueta não foi gerada",n:"s_etiqu"},{i:"❓",l:"Não sei",n:"s_etiqu"}]},
+  l_nsaiu3:{bot:"Etiqueta impressa mas não saiu. O transportador já **passou a recolher**?",choices:[{i:"✅",l:"Sim, já passou — ficou cá",n:"s_recolha"},{i:"❌",l:"Ainda não passou",n:"s_transp_c"},{i:"🔄",l:"Ainda há tempo antes da recolha",n:"s_urgente"}]},
+  l_local:{bot:"Precisa de localizar uma encomenda. Qual é o estado conhecido?",choices:[{i:"📋",l:"Saiu da fábrica mas cliente não recebeu",n:"s_rastr"},{i:"🏭",l:"Deve estar na fábrica mas não encontro",n:"s_loc_int"},{i:"❓",l:"Não sei em que ponto está",n:"s_rastr_c"}]},
+  l_stock:{bot:"Divergência de inventário. O sistema tem mais ou menos?",choices:[{i:"📈",l:"Sistema tem mais do que o físico",n:"s_stk_ex"},{i:"📉",l:"Sistema tem menos do que o físico",n:"s_stk_flt"},{i:"🔄",l:"Referências trocadas",n:"s_stk_troc"}]},
+  l_transp:{bot:"Problema com o transportador. Qual é a situação?",choices:[{i:"⏱️",l:"Atraso na entrega",n:"s_atraso"},{i:"💥",l:"Encomenda danificada",n:"s_danif"},{i:"❌",l:"Encomenda devolvida / recusada",n:"s_devol"}]},
 
-    function parseResponse(text) {
-        const feed = document.getElementById('feed');
-        const lines = text.split('\n').filter(l => l.includes('|'));
-        feed.innerHTML = lines.map(line => {
-            const [tit, res] = line.split('|');
-            return `<div class="card"><div class="card-header">NEWS</div><div style="font-weight:bold; margin-bottom:5px;">${tit}</div><div style="font-size:12px; color:#aaa;">${res}</div></div>`;
-        }).join('');
-    }
+  // MÁQUINA
+  m_area:{bot:"Problema de **equipamento**. O que está a acontecer?",choices:[{i:"⛔",l:"Máquina parou completamente",n:"s_mparagem"},{i:"🔊",l:"Ruído ou vibração anormal",n:"s_ruido"},{i:"⚡",l:"Erro elétrico / falha de energia",n:"s_elet"},{i:"🌡️",l:"Sobreaquecimento",n:"s_sobraq"}]},
+  outro:{bot:"Entendido. Qual é o tipo de problema?",choices:[{i:"🧑‍💼",l:"Problema de pessoal / turnos",n:"s_escal"},{i:"💻",l:"Problema informático / software",n:"s_escal"},{i:"🔧",l:"Manutenção preventiva em atraso",n:"s_escal"}]},
 
-    async function startRadar() {
-        testKey(); 
-    }
+  // ── SOLUÇÕES ──
+  s_densit:{bot:"**🎯 Causa provável: densitómetro descalibrado**",sol:{t:"SOLUÇÃO — CALIBRAÇÃO DE COR",s:["Pare a tiragem para não desperdiçar mais papel","Calibre o densitómetro com a escala de referência padrão","Leia as últimas impressões e compare com os valores alvo","Ajuste os rolos de tinta de acordo com os valores do densitómetro","Faça 10 folhas de teste e valide antes de continuar"],r:"✓ Resolve 87% dos casos de cor escura — Tempo: 12 min"}},
+  s_lote:{bot:"**🎯 Causa provável: lote de papel diferente**",sol:{t:"SOLUÇÃO — LOTE DE PAPEL",s:["Verifique a referência no rótulo do rolo/resma atual","Compare com o papel usado na prova aprovada","Se lote diferente: ajuste a absorção de tinta em +3% a +5%","Faça prova com este ajuste e compare com a prova aprovada","Documente o ajuste para futuras tiragens com este lote"],r:"✓ Resolve 76% dos desvios de cor — Tempo: 10 min"}},
+  s_quente:{bot:"**🎯 Causa: temperatura elevada na sala (>23°C)**",sol:{t:"SOLUÇÃO — TEMPERATURA ALTA",s:["Ative o ar condicionado — aguardar sala estabilizar abaixo de 22°C","Alta temperatura altera secagem e densidade final da tinta","Enquanto aguarda: reduzir velocidade da máquina em 15%","Após estabilização: recalibrar densitómetro e fazer nova prova","Registe a temperatura ideal para esta tinta/papel"],r:"✓ Causa comum no verão — Tempo: 20 min (inclui estabilização)"}},
+  s_fria:{bot:"**🎯 Causa: temperatura baixa (<20°C)**",sol:{t:"SOLUÇÃO — TEMPERATURA BAIXA",s:["Temperatura baixa aumenta viscosidade — cor fica mais fraca","Aqueça a sala até 21-22°C ou pré-aqueça a tinta","Aumente ligeiramente o volume de tinta em 3-5%","Faça prova após 15 minutos de aquecimento","Valide com densitómetro antes de retomar a tiragem"],r:"✓ Frequente em turnos noturnos — Tempo: 18 min"}},
+  s_press:{bot:"**🎯 Causa provável: pressão ou transferência de tinta**",sol:{t:"SOLUÇÃO — PRESSÃO DE TINTA",s:["Verifique pressão dos rolos contra os valores de referência","Limpe rolos com solvente — pode haver acumulação de pó","Ajuste o parafuso de regulação em incrementos de 1/4 de volta","Faça teste de impressão e meça com densitómetro","Se persistir: manutenção para verificação dos rolos"],r:"✓ Resolve 68% dos casos restantes — Tempo: 15 min"}},
+  s_aquec:{bot:"**🎯 Causa: variação normal durante aquecimento**",sol:{t:"SOLUÇÃO — AQUECIMENTO",s:["Normal: a cor varia nas primeiras impressões até estabilizar","Faça 50-80 folhas de descarte antes de começar a obra","Só valide a cor após este período de estabilização","Meça com densitómetro e só então inicie a tiragem oficial","Documente o número de folhas de descarte para esta máquina"],r:"✓ Procedimento padrão — Folhas descarte: 50-100"}},
+  s_visc:{bot:"**🎯 Causa: variação de viscosidade durante a tiragem**",sol:{t:"SOLUÇÃO — VISCOSIDADE",s:["Em tiragens longas o solvente evapora — tinta fica mais espessa","Verifique o viscosímetro ou faça teste táctil","Adicione solvente aprovado em pequenas quantidades (5ml)","Mexa bem e faça prova antes de continuar","Para tiragens >2000 folhas: verificar viscosidade a cada 500"],r:"✓ Prevenção: controlo de viscosidade periódico"}},
+  s_cont:{bot:"**🎯 Causa provável: contaminação de tinta ou rolos**",sol:{t:"SOLUÇÃO — CONTAMINAÇÃO",s:["Pare a máquina e limpe rolos com solvente","Verifique se há mistura de tintas no tinteiro","Limpe o tinteiro completamente e coloque tinta nova","Verifique se o papel liberta pó excessivo","Reinicie com papel limpo e valide nas primeiras 20 folhas"],r:"✓ Após limpeza resolve 91% — Tempo: 25 min"}},
+  s_icc:{bot:"**🎯 Causa provável: perfil de cor ICC incorreto**",sol:{t:"SOLUÇÃO — PERFIL DE COR",s:["Verifique o perfil de cor atribuído ao ficheiro (CMYK correto?)","Compare com o perfil usado na prova aprovada","Se diferente: converta para o perfil correto no pré-press","Gere nova imposição e faça prova digital antes de imprimir","Valide com o cliente se necessário"],r:"✓ Resolve desvios de tonalidade — Tempo: 20 min"}},
+  s_valprova:{bot:"**🎯 Ação necessária: validar ficheiro contra prova aprovada**",sol:{t:"SOLUÇÃO — VALIDAÇÃO DE PROVA",s:["Imprima prova digital no proofing calibrado","Compare com a prova aprovada sob luz D50","Use colorímetro se disponível (tolerância: ΔE < 3)","Ajuste curvas de cor no RIP se necessário","Só inicie a tiragem offset após aprovação da prova"],r:"✓ Regra: nunca imprimir sem prova validada"}},
+  s_rolos:{bot:"**🎯 Causa provável: rolos sujos ou desgastados**",sol:{t:"SOLUÇÃO — ROLOS DE TINTA",s:["Limpeza completa dos rolos com solvente adequado","Verifique o estado superficial — fissuras ou dureza?","Após limpeza, regule a pressão de acordo com o manual","Adicione tinta nova e faça prova de transferência","Se rolos danificados: solicitar substituição à manutenção"],r:"✓ Manutenção preventiva: de 3 em 3 meses"}},
+  s_nivel:{bot:"**🎯 Causa mais simples: nível de tinta baixo**",sol:{t:"SOLUÇÃO — REPOSIÇÃO DE TINTA",s:["Verifique visualmente o nível em todos os tinteiros","Reponha a tinta da mesma referência e lote se possível","Aguarde 5 min para homogeneização antes de imprimir","Faça 10 folhas de descarte e valide a cor","Documente o consumo para melhor controlo de stock"],r:"✓ Resolução imediata — Tempo: 8 min"}},
+  s_tintan:{bot:"**🎯 Atenção: tinta nova pode ter variação de lote**",sol:{t:"SOLUÇÃO — TINTA LOTE DIFERENTE",s:["Tintas de lotes diferentes podem ter variações até ΔE 3","Misture tinta nova com o restante da antiga (50/50) se houver","Faça prova e compare com a referência aprovada","Ajuste curvas de tinta no sistema se necessário","Para obras críticas: exigir ao fornecedor mesmo lote"],r:"✓ Prevenção: encomendar tinta suficiente para toda a tiragem"}},
+  s_manch:{bot:"**🎯 Causa provável: excesso de tinta ou pressão**",sol:{t:"SOLUÇÃO — MANCHAS DE TINTA",s:["Reduza o volume de tinta em 10-15% e faça nova prova","Verifique a pressão de impressão — pode estar demasiado alta","Confirme que o papel é adequado à máquina e à tinta","Limpe os cilindros de pressão com pano e solvente","Regule a velocidade — mais lenta pode resolver"],r:"✓ Resolve 82% dos casos — Tempo: 15 min"}},
+  s_fant:{bot:"**🎯 Causa: fantasmas mecânicos ou de tinta**",sol:{t:"SOLUÇÃO — FANTASMAS",s:["Fantasmas de tinta: reduza tinta e aumente velocidade","Fantasmas mecânicos: verifique folga nos rolamentos","Altere o layout da chapa para equilibrar a tinta","Limpeza completa dos rolos molhadores e de tinta","Se persistir: consultar manutenção para os cilindros"],r:"⚠ Diagnóstico complexo — contacte técnico se persistir"}},
+  s_vel:{bot:"**🎯 Causa: velatura — excesso de tinta no fundo**",sol:{t:"SOLUÇÃO — VELATURA",s:["Reduza imediatamente o volume de tinta em 15-20%","Verifique o equilíbrio tinta/água — água insuficiente causa velatura","Aumente ligeiramente a água nos rolos molhadores","Verifique o pH da solução de molha (deve estar 4.5-5.5)","Limpe os rolos molhadores se contaminados com tinta"],r:"✓ Resolve em 89% dos casos — Tempo: 12 min"}},
+  s_reg:{bot:"**🎯 Causa: problema de registo / alinhamento**",sol:{t:"SOLUÇÃO — REGISTO",s:["Verifique o ajuste das pinças de agarramento do papel","Confirme que as guias de papel estão posicionadas","Verifique a tensão das correntes de transporte","Ajuste os parafusos de registo lateral e frontal","Se persistir: verificar desgaste nas pinças"],r:"✓ Registo incorreto requer verificação mecânica"}},
+  s_ruido:{bot:"**🎯 Ruído/vibração anormal — possível problema mecânico**",sol:{t:"SOLUÇÃO — RUÍDO MECÂNICO",s:["PARE a máquina imediatamente — ruídos anormais podem indicar dano","Identifique a zona: rolos, correntes, cilindros ou motor","Verifique os níveis de lubrificação em todos os pontos","Inspecione correntes e engrenagens acessíveis","Não reinicie sem autorização do técnico de manutenção"],r:"⚠ Contacte manutenção antes de reiniciar"}},
+  s_mparagem:{bot:"**🎯 Máquina parada — diagnóstico de arranque**",sol:{t:"SOLUÇÃO — MÁQUINA NÃO ARRANCA",s:["Verifique o painel — há algum código de erro visível?","Confirme que todas as proteções estão fechadas","Verifique o disjuntor principal e os fusíveis","Reset: desligar 30 seg e religar","Se persistir: registe o código de erro e contacte técnico"],r:"✓ Reset resolve 60% das paragens — Tempo: 5-10 min"}},
+  s_encav:{bot:"**🎯 Encavamento / papel entupido**",sol:{t:"SOLUÇÃO — ENCAVAMENTO",s:["PARE a máquina e desligue antes de remover o papel","Remova na direção de alimentação — não force","Verifique se ficou rasgo de papel no interior","Limpe os sensores de papel com pano seco","Verifique a gramagem do papel — adequada à máquina?"],r:"✓ Após limpeza total retomar — Tempo: 10 min"}},
+  s_rgb:{bot:"**🎯 Ficheiro em RGB — erro crítico de pré-press**",sol:{t:"SOLUÇÃO — CONVERSÃO RGB → CMYK",s:["NUNCA imprimir offset com ficheiro RGB — cores serão incorretas","Abra o ficheiro original no software de pré-press","Converta para CMYK com o perfil correto (ex: Fogra39)","Valide as cores após conversão — algumas não têm equivalente","Gere novo PDF/X-4 e faça prova digital antes de imprimir"],r:"✓ Conversão obrigatória — comunicar ao cliente se houver desvio"}},
+  s_sangr:{bot:"**🎯 Problema de sangria ou margens**",sol:{t:"SOLUÇÃO — SANGRIA E MARGENS",s:["Verifique sangria de 3mm em todos os lados","Confirme que fundo (cores, imagens) chega até à sangria","Zona de segurança de texto: mínimo 5mm das margens de corte","Corrija e gere novo PDF com marcas de corte visíveis","Valide na preflight do RIP antes de imprimir"],r:"✓ Correção no ficheiro — avisar cliente se houver atraso"}},
+  s_font:{bot:"**🎯 Fontes não incorporadas**",sol:{t:"SOLUÇÃO — FONTES EM FALTA",s:["Abra o PDF num visualizador de preflight (Acrobat Pro)","Identifique as fontes em falta na lista de preflight","Peça ficheiro original ao cliente para re-exportar com fontes","Em alternativa: converter texto em curvas no ficheiro original","Valide o novo PDF na preflight antes de imprimir"],r:"✓ Sempre validar PDF com preflight antes de imprimir"}},
+  s_hold:{bot:"**🎯 Causa identificada: ordem em HOLD**",sol:{t:"SOLUÇÃO — LIBERTAR HOLD",s:["Identifique o motivo do HOLD no WMS (stock? crédito? aprovação?)","Para stock: confirme o físico real e corrija no sistema","Para crédito: contacte o financeiro imediatamente","Para aprovação: escale para o responsável com permissão","Após libertar: reimprimir etiqueta e agilizar transportador"],r:"✓ Resolve em 15-25 min dependendo do motivo"}},
+  s_etiqu:{bot:"**🎯 Causa: etiqueta de transporte não gerada**",sol:{t:"SOLUÇÃO — GERAR ETIQUETA",s:["Aceda ao módulo de expedição no WMS/ERP","Localize a ordem e confirme que picking está concluído","Se picking OK: force a geração da etiqueta manualmente","Imprima e aplique na caixa correta","Contacte transportador para confirmar recolha hoje"],r:"✓ Resolve em 8 min — verificar hora de recolha"}},
+  s_recolha:{bot:"**🎯 Recolha do transportador já passou**",sol:{t:"SOLUÇÃO — RECOLHA PERDIDA",s:["Ligue ao transportador — podem fazer recolha extra","Se impossível: verificar outro transportador com recolha mais tarde","Encomendas urgentes: considerar entrega própria/moto","Contacte o cliente para informar o atraso com proposta","Registe o incidente para análise e prevenção futura"],r:"⚠ Comunicar ao cliente — minimizar impacto com alternativas"}},
+  s_transp_c:{bot:"**🎯 Ainda há tempo — ação imediata**",sol:{t:"SOLUÇÃO — ACELERAR EXPEDIÇÃO",s:["Confirme a hora de recolha com o transportador agora","Priorize esta encomenda na fila de expedição","Verifique se está embalada e etiquetada corretamente","Leve fisicamente à zona de expedição e assinale como urgente","Confirme com o transportador no momento da recolha"],r:"✓ Encomenda pode sair hoje — agir nos próximos 10 min"}},
+  s_urgente:{bot:"**🎯 Ainda há tempo — prioridade máxima**",sol:{t:"SOLUÇÃO — EXPEDIÇÃO URGENTE",s:["Marque a ordem como URGENTE no sistema agora","Finalize embalagem e etiquetagem imediatamente","Leve à zona de expedição e comunique à equipa","Confirme com transportador que está pronta para recolha","Envie confirmação de expedição ao cliente após recolha"],r:"✓ Prazo cumprível — executar nos próximos minutos"}},
+  s_rastr:{bot:"**🎯 Encomenda saiu mas não chegou**",sol:{t:"SOLUÇÃO — RASTREAMENTO",s:["Localize o número de tracking na guia ou no WMS","Aceda ao portal online do transportador","Se em trânsito: comunicar ao cliente com previsão","Se tentativa falhada: reagendar com o cliente","Se extraviada: abrir reclamação com tracking e documentos"],r:"✓ Via transportador — prazo de resposta: 24-48h"}},
+  s_loc_int:{bot:"**🎯 Encomenda perdida internamente**",sol:{t:"SOLUÇÃO — LOCALIZAÇÃO INTERNA",s:["Verifique a zona de picking com o número da ordem","Consulte o histórico de movimentos no WMS","Verifique se foi colocada na zona errada por engano","Confirme com a equipa de picking se foi separada","Se não encontrar: verificar stock para repicagem urgente"],r:"✓ Com WMS deve localizar em menos de 10 min"}},
+  s_rastr_c:{bot:"**🎯 Estado desconhecido — diagnóstico completo**",sol:{t:"SOLUÇÃO — DIAGNÓSTICO TOTAL",s:["Verifique WMS: qual o último estado registado?","Se picking: verificar fisicamente na zona de separação","Se expedido: consultar tracking no portal do transportador","Se sem registo: verificar se a ordem foi confirmada","Compile informação e escale com dados concretos"],r:"✓ Com WMS resolve em 15 min"}},
+  s_stk_ex:{bot:"**🎯 Stock virtual superior ao físico**",sol:{t:"SOLUÇÃO — REGULARIZAÇÃO",s:["Faça contagem física rigorosa da referência","Verifique se há saídas não registadas no sistema","Corrija o stock no WMS com a quantidade física real","Identifique o período do desvio para análise","Implemente contagem cíclica semanal para esta referência"],r:"✓ Regularização imediata — investigar causa raiz"}},
+  s_stk_flt:{bot:"**🎯 Stock físico superior ao virtual**",sol:{t:"SOLUÇÃO — STOCK NÃO REGISTADO",s:["Verifique se há receções físicas não lançadas no sistema","Confirme se há devoluções não processadas","Conte fisicamente e atualize o sistema","Verifique se o produto é o correto — etiqueta certa?","Processe todas as entradas pendentes no WMS"],r:"✓ Verificar receções pendentes no sistema"}},
+  s_stk_troc:{bot:"**🎯 Referências trocadas**",sol:{t:"SOLUÇÃO — REFERÊNCIAS TROCADAS",s:["Identifique fisicamente as referências trocadas nas localizações","Faça movimentos de transferência no WMS para corrigir","Verifique se há encomendas saídas com produto errado","Reetiquete os produtos corretamente","Reforce formação sobre verificação de referências"],r:"⚠ Verificar encomendas expedidas recentes com estas referências"}},
+  s_atraso:{bot:"**🎯 Atraso na entrega**",sol:{t:"SOLUÇÃO — ATRASO",s:["Consulte o tracking para ver o estado atual","Ligue ao transportador para obter previsão concreta","Informe o cliente proativamente com nova previsão","Para atrasos repetidos: documente e avalie o transportador","Para urgências: considere recolha do cliente"],r:"✓ Comunicação proativa ao cliente é sempre a melhor abordagem"}},
+  s_danif:{bot:"**🎯 Encomenda danificada**",sol:{t:"SOLUÇÃO — PRODUTO DANIFICADO",s:["Instrua o cliente a fotografar o dano antes de assinar","Se já assinou: fotografar imediatamente e contactar transportador","Abra reclamação formal com fotos e número de tracking","Verifique a apólice de seguro de transporte","Decida: reenviar imediatamente ou aguardar resolução do seguro"],r:"⚠ Prazo para reclamação: 24-72h após entrega — agir já"}},
+  s_devol:{bot:"**🎯 Encomenda devolvida ou recusada**",sol:{t:"SOLUÇÃO — DEVOLUÇÃO",s:["Confirme o motivo: endereço errado? cliente ausente? recusa?","Para endereço errado: corrigir no WMS e reexpedicionar","Para ausente: reagendar entrega com o cliente","Para recusa do cliente: escale para comercial imediatamente","Processe a devolução no WMS quando a mercadoria chegar"],r:"✓ Motivo define próxima ação — verificar em 24h"}},
+  s_wms:{bot:"**🎯 Sem acesso ao WMS**",sol:{t:"SOLUÇÃO — ACESSO AO SISTEMA",s:["Contacte o responsável de turno para acesso imediato","Em paralelo: localize fisicamente a encomenda na expedição","Verifique se está no caminhão do transportador","Se não localizar: acesso ao WMS com ajuda do responsável","Documente o incidente para revisão de permissões"],r:"✓ Com responsável resolve em 10-15 min"}},
+  s_elet:{bot:"**🎯 Falha elétrica — atenção à segurança**",sol:{t:"SOLUÇÃO — FALHA ELÉTRICA",s:["⚠ SEGURANÇA PRIMEIRO — não toque em componentes expostos","Desligue pelo interruptor principal","Verifique o quadro elétrico — algum disjuntor disparou?","Verifique a alimentação de energia do sector","Contacte o electricista ou técnico obrigatoriamente"],r:"⚠ Problemas elétricos requerem técnico — não improvise"}},
+  s_sobraq:{bot:"**🎯 Sobreaquecimento**",sol:{t:"SOLUÇÃO — SOBREAQUECIMENTO",s:["PARE a máquina imediatamente","Aguarde 15-20 minutos para arrefecimento","Verifique o sistema de refrigeração/ventilação","Confirme que as grelhas de ventilação não estão obstruídas","Verifique os níveis de fluido de refrigeração"],r:"⚠ Não reiniciar sem confirmar temperatura nos limites"}},
+  s_escal:{bot:"**🎯 Problema identificado — escalação necessária**",sol:{t:"ENCAMINHAMENTO",s:["Este problema requer intervenção especializada","Documente todos os detalhes do que observou","Contacte o responsável de turno ou departamento adequado","Enquanto aguarda: minimize o impacto","Registe o ocorrido para análise e melhoria de processo"],r:"✓ Documentação é essencial para resolução eficaz"}}
+};
 
-    function switchPage(pageId, el) {
-        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('section-' + pageId).classList.add('active');
-        el.classList.add('active');
-    }
+let chatOpen = false;
+
+function openChat(){
+  document.getElementById('chatOverlay').classList.add('active');
+  document.body.style.overflow='hidden';
+  chatOpen=true;
+  const b=document.getElementById('chatBody');
+  if(!b.children.length) setTimeout(()=>showNode('start'),200);
+}
+function closeChat(){
+  document.getElementById('chatOverlay').classList.remove('active');
+  document.body.style.overflow='';
+  chatOpen=false;
+}
+function closeOut(e){if(e.target===document.getElementById('chatOverlay'))closeChat();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeChat();});
+
+function showNode(k){
+  const node=T[k]; if(!node) return;
+  showTyping(()=>{
+    addBot(node.bot);
+    if(node.sol) setTimeout(()=>addSol(node.sol),380);
+    else if(node.choices) setTimeout(()=>addChoices(node.choices),380);
+  });
+}
+function showTyping(cb){
+  const b=document.getElementById('chatBody');
+  const r=document.createElement('div'); r.className='typing-row';
+  r.innerHTML=`<div class="bav bot">⚡</div><div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  b.appendChild(r); scrollB();
+  setTimeout(()=>{r.remove();cb();},850);
+}
+function addBot(txt){
+  const b=document.getElementById('chatBody');
+  const r=document.createElement('div'); r.className='bubble-row';
+  const h=txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  r.innerHTML=`<div class="bav bot">⚡</div><div class="bubble bot">${h}</div>`;
+  b.appendChild(r); scrollB();
+}
+function addUser(lbl){
+  const b=document.getElementById('chatBody');
+  const r=document.createElement('div'); r.className='bubble-row user';
+  r.innerHTML=`<div class="bav usr">👷</div><div class="bubble user">${lbl}</div>`;
+  b.appendChild(r); scrollB();
+}
+function addChoices(choices){
+  const b=document.getElementById('chatBody');
+  const w=document.createElement('div'); w.className='choices-wrap';
+  choices.forEach(c=>{
+    const btn=document.createElement('button'); btn.className='choice-btn';
+    btn.innerHTML=`<span class="ci">${c.i}</span>${c.l}`;
+    btn.onclick=()=>{w.remove();addUser(c.l);setTimeout(()=>showNode(c.n),280);};
+    w.appendChild(btn);
+  });
+  b.appendChild(w); scrollB();
+}
+function addSol(sol){
+  const b=document.getElementById('chatBody');
+  const c=document.createElement('div'); c.className='sol-card';
+  const sH=sol.s.map((s,i)=>`<div class="sol-step"><div class="sol-num">${i+1}</div><div class="sol-text">${s}</div></div>`).join('');
+  c.innerHTML=`<div class="sol-title">${sol.t}</div><div class="sol-steps">${sH}</div><div class="sol-result">${sol.r}</div><button class="restart-btn" onclick="restartChat()">↩ Resolver outro problema</button>`;
+  b.appendChild(c); scrollB();
+}
+function restartChat(){
+  document.getElementById('chatBody').innerHTML='';
+  setTimeout(()=>showNode('start'),100);
+}
+function scrollB(){
+  const b=document.getElementById('chatBody');
+  setTimeout(()=>b.scrollTo({top:b.scrollHeight,behavior:'smooth'}),60);
+}
+function toggleCase(id){document.getElementById(id).classList.toggle('open');}
+document.getElementById('case1').classList.add('open');
 </script>
 </body>
 </html>
