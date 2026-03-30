@@ -46,7 +46,6 @@ section, .ticker { position: relative; z-index: 1; }
 .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 80px 24px 60px; }
 .brand-logo { font-size: clamp(60px,12vw,110px); font-weight: 800; letter-spacing: -2px; margin-bottom: 6px; display: inline-block; }
 .i-dot { color: var(--bright); position: relative; display: inline-block; }
-.i-dot::before { content: ''; position: absolute; top: -4px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; background: var(--bright); box-shadow: 0 0 20px var(--bright), 0 0 40px var(--bright); }
 .brand-resolve { font-size: clamp(14px,3.5vw,30px); font-weight: 700; letter-spacing: 8px; text-transform: uppercase; color: var(--glow); margin-bottom: 32px; text-shadow: 0 0 30px rgba(59,170,255,0.5); }
 .hero-tagline { font-size: clamp(14px,2vw,17px); color: var(--soft); max-width: 580px; line-height: 1.7; font-weight: 300; margin-bottom: 44px; }
 .magic-btn-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 52px; }
@@ -215,9 +214,6 @@ footer { background: rgba(4,15,34,0.9); border-top: 1px solid var(--border); pad
   <div class="brand-logo">Oban<span class="i-dot">i</span>A</div>
   <div class="brand-resolve">Resolve</div>
   <p class="hero-tagline">Demonstração funcional de um assistente operacional adaptável aos processos, histórico e método de trabalho de cada empresa.</p>
-  <p class="hero-note">
-Demonstração funcional com cenários simulados. Adaptável aos processos e regras de cada empresa.
-</p>
  <div class="magic-btn-wrap">
     <button class="magic-btn" onclick="openChat()">
       <div class="magic-btn-inner">
